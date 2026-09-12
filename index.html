@@ -1,1 +1,151 @@
-<!DOCTYPE html><html lang=ko><head><meta charset=UTF-8><meta http-equiv=refresh content="0;url=liftnote-app.html"><title>리프트노트</title></head><body><p><a href=liftnote-app.html>리프트노트 열기</a></p></body></html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0b0b"/>
+<title>리프트노트</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#0b0b0b;color:#f2efe8;font-family:sans-serif}
+button,input,textarea{font:inherit}button{cursor:pointer}
+.app{max-width:480px;margin:0 auto;min-height:100dvh}
+.screen{display:none;padding:18px 18px 84px}.screen.on{display:block}
+.logo{font-size:28px;margin:0}.logo small{display:block;font-size:11px;color:#8d8a84;letter-spacing:.28em}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:16px 0}
+.week span{text-align:center;font-size:11px;color:#8d8a84}
+.week button{border:0;background:0;color:#fff;border-radius:12px;padding:8px 0}
+.week button.on{background:#2a2a2a}
+.row{display:flex;justify-content:space-between;align-items:flex-end}
+h1{font-size:24px;margin:4px 0 12px}
+.kg{width:72px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;color:#fff;padding:10px;text-align:center}
+.card{background:#141414;border:1px solid #2a2a2a;border-radius:22px;padding:18px}
+.lead,.k{color:#8d8a84;font-size:13px}
+.note{width:100%;min-height:72px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;color:#fff;padding:12px}
+.primary,.ghost{width:100%;border:0;border-radius:14px;padding:14px;margin-top:10px;color:#efe8dc}
+.primary{background:#3a342c}.primary:active{background:#5a5044}
+.ghost{background:#1a1a1a}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;background:#0b0b0b;border-top:1px solid #222;display:flex}
+.nav button{flex:1;background:0;border:0;color:#6f6c66;padding:12px 0;font-size:11px}
+.nav button.on{color:#fff}
+.hidden{display:none!important}
+.grid{display:flex;flex-wrap:wrap;gap:8px}
+.exbtn{border:1px solid #2a2a2a;background:#1a1a1a;color:#fff;border-radius:12px;padding:10px 12px}
+.msg{color:#8d8a84;font-size:13px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal button{border:0;background:#1a1a1a;color:#fff;border-radius:8px;padding:10px 0}
+.statrow{display:flex;gap:8px;margin:12px 0}
+.stat{flex:1;background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="s-today" class="screen on">
+<p class="logo">리프트노트<small>LIFTNOTE</small></p>
+<div class="week" id="weekBar"></div>
+<div class="row"><div><div class="k">오늘</div><h1 id="todayTitle">날짜</h1></div>
+<input id="kg" class="kg" inputmode="decimal" placeholder="kg"></div>
+<div class="card">
+<div class="k">한 줄 일기</div>
+<h2>한 줄로 적으세요</h2>
+<p class="lead">기본은 한 줄입니다.</p>
+<textarea id="note" class="note" placeholder="벤치프레스 80x8"></textarea>
+<button class="primary" type="button" id="btnExample">이 예시로 시작</button>
+<div class="row2">
+<button class="ghost" type="button" id="btnBlank">직접 적기</button>
+<button class="ghost" type="button" id="btnPick">종목 고르기</button>
+</div>
+<div id="exPick" class="hidden"></div>
+<button class="primary" type="button" id="btnSave">오늘 저장</button>
+<p class="msg" id="todayMsg"></p>
+</div>
+</section>
+<section id="s-cal" class="screen">
+<p class="logo">달력</p>
+<div class="row2"><button class="ghost" type="button" id="btnPrev">이전</button>
+<button class="ghost" type="button" id="btnNext">다음</button></div>
+<h1 id="calTitle"></h1>
+<div class="cal" id="calGrid"></div>
+<div class="card" id="calDetail"></div>
+</section>
+<section id="s-ability" class="screen">
+<p class="logo">능력</p>
+<p class="lead">자세 점수 없음. 볼륨만.</p>
+<div class="statrow">
+<div class="stat"><b id="abVol">0</b><span class="k">볼륨</span></div>
+<div class="stat"><b id="abPr">0</b><span class="k">PR</span></div>
+</div>
+<div class="card" id="rmBox"></div>
+</section>
+<section id="s-form" class="screen">
+<p class="logo">자세</p>
+<p class="lead">종목을 고른 뒤 사진. 연습 리포트.</p>
+<div class="card"><p id="picked">운동을 고르세요</p><div id="exList" class="grid"></div></div>
+<label class="card">사진/영상<input id="file" type="file" accept="image/*,video/*"></label>
+<p class="msg" id="fileMeta"></p>
+<button class="primary" type="button" id="btnReport">연습 리포트</button>
+<div class="card hidden" id="reportBox"></div>
+</section>
+<section id="s-settings" class="screen">
+<p class="logo">설정</p>
+<div class="card"><p class="lead">일기 공짜. 자세는 연습. KEEP By soon young.</p>
+<button class="ghost" type="button" id="btnClear">기록 지우기</button></div>
+</section>
+<nav class="nav">
+<button type="button" data-go="today" class="on">오늘</button>
+<button type="button" data-go="cal">달력</button>
+<button type="button" data-go="ability">능력</button>
+<button type="button" data-go="form">자세</button>
+<button type="button" data-go="settings">설정</button>
+</nav>
+</div>
+<script>
+const EX=["바벨 벤치프레스","인클라인 벤치프레스","랫풀다운","바벨 로우","밀리터리 프레스","레터럴 레이즈","바벨 컬","리버스 바벨 컬","스쿼트","데드리프트"];
+const EXAMPLE="벤치프레스 80x8";
+function $(i){return document.getElementById(i)}
+function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function load(){try{return JSON.parse(localStorage.getItem("ln_diary")||"[]")}catch(e){return[]}}
+function save(a){localStorage.setItem("ln_diary",JSON.stringify(a))}
+function go(n){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));$("s-"+n).classList.add("on");
+document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.go===n));
+if(n==="cal")paintCal();if(n==="ability")paintAb();}
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>go(b.dataset.go));
+(function(){const d=["일","월","화","수","목","금","토"],n=new Date(),s=new Date(n);s.setDate(n.getDate()-n.getDay());
+let h="";for(let i=0;i<7;i++)h+="<span>"+d[i]+"</span>";
+for(let i=0;i<7;i++){const x=new Date(s);x.setDate(s.getDate()+i);h+="<button type=button class='"+(x.toDateString()===n.toDateString()?"on":"")+"'>"+x.getDate()+"</button>";}
+$("weekBar").innerHTML=h;$("todayTitle").textContent=(n.getMonth()+1)+"월 "+n.getDate()+"일 "+d[n.getDay()]+"요일";})();
+$("btnExample").onclick=function(){$("note").value=EXAMPLE;$("todayMsg").textContent="예시 한 줄을 넣었습니다.";};
+$("btnBlank").onclick=function(){$("note").value="";$("todayMsg").textContent="";$("note").focus();};
+$("btnPick").onclick=function(){const b=$("exPick");const o=b.classList.contains("hidden");b.classList.toggle("hidden",!o);
+if(o){b.innerHTML="<div class='grid'>"+EX.map(n=>"<button class='exbtn' type=button>"+n+"</button>").join("")+"</div>";
+b.querySelectorAll("button").forEach(x=>x.onclick=()=>{$("note").value=($("note").value.trim()?$("note").value+"\n":"")+x.textContent+" ";});}};
+$("btnSave").onclick=function(){const t=$("note").value.trim();if(!t){$("todayMsg").textContent="한 줄이라도 적으세요.";return;}
+const items=t.split(/\n/).map(l=>l.trim()).filter(Boolean).map(line=>{const m=line.match(/(\d+(?:\.\d+)?)\s*[xX]\s*(\d+)/);
+return{name:m?line.slice(0,m.index).trim()||"운동":line,sets:m?[{w:+m[1],r:+m[2]}]:[]};});
+const list=load().filter(d=>d.date!==today());list.unshift({date:today(),note:t,items});save(list.slice(0,60));
+$("todayMsg").textContent="저장했습니다.";paintAb();};
+let cal=new Date();
+$("btnPrev").onclick=()=>{cal.setMonth(cal.getMonth()-1);paintCal();};
+$("btnNext").onclick=()=>{cal.setMonth(cal.getMonth()+1);paintCal();};
+function paintCal(){const y=cal.getFullYear(),m=cal.getMonth();$("calTitle").textContent=y+"년 "+(m+1)+"월";
+const start=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
+let h="";for(let i=0;i<start;i++)h+="<span></span>";
+for(let d=1;d<=days;d++){const iso=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+h+="<button type=button data-iso='"+iso+"'>"+d+"</button>";}
+$("calGrid").innerHTML=h;$("calGrid").querySelectorAll("button").forEach(b=>b.onclick=()=>{const x=load().find(z=>z.date===b.dataset.iso);
+$("calDetail").textContent=x?x.note:(b.dataset.iso+" 일기 없음");});}
+function paintAb(){const list=load();let v=0,n=0;list.forEach(d=>(d.items||[]).forEach(it=>(it.sets||[]).forEach(s=>{v+=(s.w||0)*(s.r||0);if(s.w)n++;})));
+$("abVol").textContent=String(Math.round(v));$("abPr").textContent=String(n);
+$("rmBox").textContent=n?"기록이 있습니다.":"일기를 저장하면 여기 나옵니다.";}
+let picked=EX[0];
+$("exList").innerHTML=EX.map(n=>"<button class='exbtn' type=button>"+n+"</button>").join("");
+$("exList").querySelectorAll("button").forEach(b=>b.onclick=()=>{picked=b.textContent;$("picked").textContent="선택: "+picked;});
+let has=false;$("file").onchange=function(e){has=!!e.target.files[0];$("fileMeta").textContent=has?e.target.files[0].name:"파일을 고르세요";};
+$("btnReport").onclick=function(){if(!has){$("fileMeta").textContent="사진이나 영상을 고르세요.";return;}
+$("reportBox").classList.remove("hidden");
+$("reportBox").innerHTML="<b>"+picked+"</b><p class='lead'>준비: 주동근 켤 뒤에 움직입니다.</p><p>잘한 점: 종목을 고르고 영상을 올렸습니다.</p><p>개선: 내릴 때 맨 아래에서 하나 하고 올라오세요.</p><p class='lead'>연습 리포트. 점수 없음.</p>";};
+$("btnClear").onclick=function(){if(confirm("지울까요?")){localStorage.removeItem("ln_diary");$("note").value="";$("todayMsg").textContent="지웠습니다.";}};
+paintAb();
+</script>
+</body>
+</html>
