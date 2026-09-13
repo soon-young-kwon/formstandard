@@ -127,6 +127,7 @@ function go(n){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
   $("s-"+n).classList.add("on");
   document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.go===n));
+  if(n==="today"){draft=loadDraft();paintToday();}
   if(n==="cal")paintCal();
   if(n==="ability")paintAb();
 }
@@ -206,10 +207,14 @@ function paintToday(){
     draft.splice(+b.dataset.drop,1);saveDraft(draft);paintToday();
   });
   $("sessionBox").querySelectorAll("[data-more]").forEach(b=>b.onclick=()=>{
-    addPicked=draft[+b.dataset.more].name;
-    $("addSheet").classList.remove("hidden");
-    paintAddEx();showLast(addPicked);
-    $("kg").focus();
+    const row=draft[+b.dataset.more];
+    addPicked=row.name;
+    const last=(row.sets&&row.sets[row.sets.length-1])||lastOf(row.name)||{w:parseFloat($("kg").value)||80,r:parseInt($("reps").value,10)||8};
+    row.sets.push({w:last.w,r:last.r});
+    saveDraft(draft);
+    paintToday();
+    $("addMsg").textContent=row.name+" "+last.w+"kg × "+last.r+"회 한 줄 더 넣었습니다.";
+    $("sessionBox").scrollIntoView({block:"start"});
   });
 }
 paintToday();
@@ -232,6 +237,7 @@ $("btnAdd").onclick=function(){
   saveDraft(draft);
   $("addMsg").textContent=addPicked+" "+w+"kg × "+r+"회 "+n+"줄 넣었습니다.";
   paintToday();
+  $("sessionBox").scrollIntoView({block:"start"});
 };
 $("btnSave").onclick=function(){
   if(!draft.length){$("todayMsg").textContent="오늘 한 세트가 없습니다.";return;}
